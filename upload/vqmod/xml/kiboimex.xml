@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <id>Import/Export Module by Kibo IT</id>
+    <version>1.0.0</version>
+    <vqmver>2.5.1</vqmver>
+    <author>Albert Peschar (Kibo IT)</author>
+    <file name="admin/controller/common/column_left.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[
+                if ($this->user->hasPermission('access', 'catalog/recurring')) {
+            ]]></search>
+            <add><![CDATA[
+                if ($this->user->hasPermission('access', 'catalog/kiboimex')) {
+                    $catalog[] = array(
+                        'name'     => 'Import/Export',
+                        'href'     => $this->url->link('catalog/kiboimex', 'user_token=' . $this->session->data['user_token'], true),
+                        'children' => array(),
+                    );
+                }
+            ]]></add>
+        </operation>
+    </file>
+    <file name="admin/controller/common/menu.php">
+        <operation error="skip">
+            <search position="before"><![CDATA[
+                $data['recurring'] =
+            ]]></search>
+            <add><![CDATA[
+                $data['kiboimex'] = $this->url->link('catalog/kiboimex', 'token=' . $this->session->data['token'], 'SSL');
+            ]]></add>
+        </operation>
+    </file>
+    <file name="admin/view/template/common/menu.tpl">
+        <operation error="skip">
+            <search position="before"><![CDATA[
+                <li><a href="<?php echo $recurring;
+            ]]></search>
+            <add><![CDATA[
+                <li><a href="<?php echo $kiboimex; ?>">Import/Export</a></li>
+            ]]></add>
+        </operation>
+    </file>
+</modification>
