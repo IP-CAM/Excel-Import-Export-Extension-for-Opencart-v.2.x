@@ -216,9 +216,6 @@ class ControllerCatalogKiboimex extends Controller {
 
             // Defaults
             $product['row'] = $n;
-            $product['product']['quantity'] = 999999;
-            $product['product']['stock_status_id'] = $default_stock_status_id;
-            $product['product']['subtract'] = 0;
             $product['product']['weight_class_id'] = $default_weight_class_id;
             $product['product']['length_class_id'] = $default_length_class_id;
             $product['description']['language_id'] = $language_id;
@@ -240,7 +237,6 @@ class ControllerCatalogKiboimex extends Controller {
                 'ISBN' => 'product.isbn',
                 'MPN' => 'product.mpn',
                 'Locatie' => 'product.location',
-                'Voorraad' => 'product.quantity',
             );
 
             foreach($map as $field => $set) {
@@ -304,6 +300,15 @@ class ControllerCatalogKiboimex extends Controller {
                     'image'      => $img,
                     'sort_order' => $i + 1,
                 );
+
+            // Voorraad
+            if (isset($data['Voorraad']) && $data['Voorraad'] != '') {
+                $product['product']['quantity'] = (int) $data['Voorraad'];
+                $product['product']['subtract'] = 1;
+            } else {
+                $product['product']['quantity'] = 999999;
+                $product['product']['subtract'] = 0;
+            }
 
             // Voorraadstatus
             if($data['Voorraadstatus'] == '')
