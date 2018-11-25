@@ -99,9 +99,10 @@
       <div class="panel-body">
         <div class="row">
           <div class="col-sm-8 col-sm-offset-2">
-            <p>Met de exportfunctionaliteit exporteert u alle producten die eerder
-            met behulp van de importfunctionaliteit zijn ingeladen. De gedownloadede
-            Excelsheet kunt up bewerken, en opnieuw uploaden.</p>
+            <p>
+              Met de exportfunctionaliteit exporteert u alle producten. De
+              gedownloade Excelsheet kunt u bewerken, en opnieuw uploaden.
+            </p>
           </div>
         </div>
         <form action="" method="post">

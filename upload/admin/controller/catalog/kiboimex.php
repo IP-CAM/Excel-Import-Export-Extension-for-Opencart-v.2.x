@@ -416,8 +416,12 @@ class ControllerCatalogKiboimex extends Controller {
 
         $this->cache->delete('product');
 
-//        $this->load->model('extension/module/brainyfilter');
-//        $this->model_extension_module_brainyfilter->cacheProductProperties();
+        try {
+            $this->load->model('module/brainyfilter');
+        } catch (Throwable $e) {}
+        if (class_exists(ModelModuleBrainyFilter::class)) {
+            (new ModelModuleBrainyFilter($this->registry))->cacheProductProperties();
+        }
 
         $this->data['success'] = true;
     }
@@ -541,8 +545,7 @@ class ControllerCatalogKiboimex extends Controller {
         $row = $this->_escapeArray($product['product']);
         unset($row['product_id']);
 
-        if($insert)
-            $row['kiboimex_imported'] = 1;
+        $row['kiboimex_imported'] = 1;
 
         if($product_id)
             $this->_update('product', array('product_id' => $product_id), $row);
