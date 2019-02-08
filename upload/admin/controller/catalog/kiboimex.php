@@ -136,7 +136,6 @@ class ControllerCatalogKiboimex extends Controller {
             'MPN',
             'Locatie',
             'Belastinggroep',
-            'SEO productnaam',
             'Status',
             'Merk',
             'Categorieën',
@@ -345,12 +344,6 @@ class ControllerCatalogKiboimex extends Controller {
             // Filters
             $product['filter'] =
                 $this->_findFilters($n, $this->_splitValues($data['Filters']));
-
-            // SEO productnaam
-            if($data['SEO productnaam'] == '')
-                $product['url_alias'] = null;
-            else
-                $product['url_alias'] = $data['SEO productnaam'];
 
             // Sort order
             $product['product']['sort_order'] = 0;
@@ -575,21 +568,7 @@ class ControllerCatalogKiboimex extends Controller {
         foreach($product['filter'] as $row)
             $this->_insert('product_filter', array_merge($row, array('product_id' => $product_id)));
 
-//        // Save URL alias
-//        $this->db->query("DELETE FROM `" . DB_PREFIX . "url_alias` WHERE query = 'product_id={$product_id}'");
-//        if($product['url_alias']) {
-//            $result = $this->db->query("SELECT * FROM `" . DB_PREFIX . "url_alias` WHERE keyword = '" . $this->db->escape($product['url_alias']) . "'");
-//            if($result->row) {
-//                $this->_addWarning($product['row'], "SEO productnaam is al in gebruik");
-//            } else {
-//                $this->_insert('url_alias', array(
-//                    'query'       => 'product_id=' . $product_id,
-//                    'keyword'     => $product['url_alias'],
-//                    'language_id' => $product['description']['language_id'],
-//                ));
-//            }
-//        }
-
+        // Save calculator variables.
         if ($this->hasCalculator && !empty($product['unic_product_var'])) {
             $this->db->query("DELETE FROM `" . DB_PREFIX . "unic_product_var` WHERE product_id = {$product_id}");
             foreach ($product['unic_product_var'] as $i => $row) {
@@ -745,7 +724,6 @@ class ControllerCatalogKiboimex extends Controller {
             'MPN',
             'Locatie',
             'Belastinggroep',
-            'SEO productnaam',
             'Status',
             'Sorteervolgorde',
             'Merk',
@@ -818,10 +796,6 @@ class ControllerCatalogKiboimex extends Controller {
                 $images[] = $row['image'];
 
             $images = implode("; ", $images);
-            // Seo pack //
-//            // SEO productnaam
-//            $result = $this->db->query("SELECT keyword FROM `" . DB_PREFIX . "url_alias` WHERE query = 'product_id={$product_id}' AND language_id = '" . (int) $this->config->get('config_language_id') . "' ORDER BY url_alias_id LIMIT 1");
-//            $url_alias = $result->row ? $result->row['keyword'] : '';
 
             // Merk
             if($product['manufacturer_id']) {
@@ -948,7 +922,6 @@ class ControllerCatalogKiboimex extends Controller {
                 'MPN' => $this->_unescape($product['mpn']),
                 'Locatie' => $this->_unescape($product['location']),
                 'Belastinggroep' => $tax_class,
-//                'SEO productnaam' => $url_alias,
                 'Status' => $product['status'] ? 'actief' : 'inactief',
                 'Sorteervolgorde' => $product['sort_order'] == '0' ? '' : $product['sort_order'],
                 'Merk' => $manufacturer,
