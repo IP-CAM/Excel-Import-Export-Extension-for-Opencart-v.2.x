@@ -56,7 +56,6 @@ class ControllerCatalogKiboimex extends Controller {
         return ob_get_clean();
     }
 
-
     private function _initializeDatabase() {
         $result = $this->db->query("DESC `" . DB_PREFIX . "product`");
 
@@ -128,7 +127,6 @@ class ControllerCatalogKiboimex extends Controller {
             'Meta Tag Zoekwoorden',
             'Product Tags',
             'Afbeelding',
-            'Technische tekening',
             'Model',
             'SKU',
             'UPC',
@@ -738,7 +736,6 @@ class ControllerCatalogKiboimex extends Controller {
             'Meta Tag Zoekwoorden',
             'Product Tags',
             'Afbeelding',
-            'Technische tekening',
             'Model',
             'SKU',
             'UPC',
@@ -884,16 +881,7 @@ class ControllerCatalogKiboimex extends Controller {
                                      $this->_unescape($row['name']));
             $filters = implode("; ", $filters);
 
-            //Opties
-
-
-//            // Pluspunten; Minpunten
-//            foreach(array('bb_plus', 'bb_min') as $field) {
-//                $value = $this->_unescape($product[$field]);
-//                $value = preg_replace('/\s*\n/', '; ', trim($value));
-//                $$field = $value;
-//            }
-
+            // Calculator variables
             if ($this->hasCalculator) {
                 $calculator_variables = [];
                 $result = $this->db->query(
