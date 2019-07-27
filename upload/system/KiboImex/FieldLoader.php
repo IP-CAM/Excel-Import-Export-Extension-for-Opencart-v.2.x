@@ -29,6 +29,7 @@ class FieldLoader {
             if (!$field instanceof Field) {
                 throw new RuntimeException("Field class $class must implement Field interface");
             }
+            $fields[] = $field;
         }
         return $fields;
     }
