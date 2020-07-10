@@ -44,7 +44,9 @@ class Basic implements Field {
     private $defaultLengthClassId;
     private $defaultStockStatusId;
     private $attributes;
-    
+    private $attributePresetsEnabled;
+    private $attributePresets = [];
+
     public function __construct(ControllerCatalogKiboimex $controller) {
         $this->ctl = $controller;
         $this->languageId = $this->getLanguageId();
@@ -52,6 +54,7 @@ class Basic implements Field {
         $this->defaultWeightClassId = $this->getDefaultClassId('weight', 'gewichtseenheid');
         $this->defaultLengthClassId = $this->getDefaultClassId('length', 'lengte-eenheid');
         $this->defaultStockStatusId = $this->getDefaultStockStatusId();
+        $this->attributePresetsEnabled = Helpers::columnExists($this->ctl->db, 'product_attribute', 'preset_id');
     }
 
     private function getLanguageId(): int {
@@ -274,20 +277,32 @@ class Basic implements Field {
             if (!isset($row[$label])) {
                 continue;
             }
-            if ($row[$label] === '') {
-                $this->ctl->db->query("
-                    DELETE FROM `" . DB_PREFIX . "product_attribute`
-                    WHERE
-                        product_id = " . (int) $productId . "
-                        AND attribute_id = " . (int) $attributeId . "
-                ");
-            } else {
-                Helpers::insert($this->ctl->db, 'product_attribute', [
+
+            $values = str_getcsv($row[$label], ';');
+            $values = array_map('trim', $values);
+            $values = array_filter($values, 'strlen');
+
+            $this->ctl->db->query("
+                DELETE FROM `" . DB_PREFIX . "product_attribute`
+                WHERE
+                    product_id = " . (int) $productId . "
+                    AND attribute_id = " . (int) $attributeId . "
+            ");
+
+            foreach ($values as $value) {
+                $attributeRow = [
                     'product_id' => $productId,
                     'attribute_id' => $attributeId,
                     'language_id' => $this->languageId,
-                    'text' => $row[$label],
-                ], ['update']);
+                    'text' => $value,
+                ];
+
+                if ($preset = $this->findAttributePreset($attributeId, $value)) {
+                    $attributeRow['text'] = $preset['text'];
+                    $attributeRow['preset_id'] = $preset['preset_id'];
+                }
+
+                Helpers::insert($this->ctl->db, 'product_attribute', $attributeRow, ['update']);
             }
         }
 
@@ -354,8 +369,7 @@ class Basic implements Field {
         return $filters;
     }
 
-    private function getAttributes()
-    {
+    private function getAttributes() {
         if (isset($this->attributes)) {
             return $this->attributes;
         }
@@ -386,6 +400,35 @@ class Basic implements Field {
         $this->attributes = $attributes;
 
         return $attributes;
+    }
+
+    private function findAttributePreset($attribute_id, $text) {
+        if (!$this->attributePresetsEnabled) {
+            return null;
+        }
+
+        if (!isset($this->attributePresets[$attribute_id])) {
+            $this->attributePresets[$attribute_id] = $this->ctl->db->query("
+                SELECT
+                    ap.preset_id,
+                    apd.text
+                FROM `" . DB_PREFIX . "attribute_presets` ap
+                JOIN `" . DB_PREFIX . "attribute_presets_description` apd USING (preset_id)
+                WHERE
+                    ap.attribute_id = " . (int) $attribute_id . "
+                    AND apd.language_id = " . (int) $this->languageId . "
+                ORDER BY
+                    ap.preset_id
+            ")->rows;
+        }
+
+        foreach ($this->attributePresets[$attribute_id] as $preset) {
+            if (strcasecmp(trim($preset['text']), trim($text)) == 0) {
+                return $preset;
+            }
+        }
+
+        return null;
     }
 
     private function findByTitle($table, $col_id, $col_title, $title) {
@@ -527,28 +570,27 @@ class Basic implements Field {
         $filters = implode("; ", $filters);
 
         // Attributen
-        $result = $this->ctl->db->query("SELECT
-                agd.name AS attr_group_name, ad.name AS attr_name, pa.text
-                FROM
-                  `" . DB_PREFIX . "product_attribute` pa
-                JOIN `" . DB_PREFIX . "attribute` a ON
-                  a.attribute_id = pa.attribute_id
-                JOIN `" . DB_PREFIX . "attribute_description` ad ON
-                  ad.attribute_id = a.attribute_id
-                JOIN `" . DB_PREFIX . "attribute_group` ag ON
-                  ag.attribute_group_id = a.attribute_group_id
-                JOIN `" . DB_PREFIX . "attribute_group_description` agd ON
-                  agd.attribute_group_id = ag.attribute_group_id
-                WHERE
-                    pa.product_id = " . (int) $product['product_id'] . "
-                    AND pa.language_id = " . (int) $this->languageId . "
-                    AND ad.language_id = " . (int) $this->languageId . "
-                    AND agd.language_id = " . (int) $this->languageId . "
-            ");
+        $result = $this->ctl->db->query("
+            SELECT
+                pa.attribute_id,
+                pa.text
+            FROM `" . DB_PREFIX . "product_attribute` pa
+            WHERE
+                pa.product_id = " . (int) $product['product_id'] . "
+                AND pa.language_id = " . (int) $this->languageId . "
+            ORDER BY
+                pa.text
+        ");
+        $attribute_labels = $this->getAttributes();
         $product_attributes = array();
         foreach($result->rows as $row) {
-            $product_attributes[Helpers::unescape($row['attr_group_name']) . ': ' . Helpers::unescape($row['attr_name'])] = Helpers::unescape($row['text']);
+            if (isset($attribute_labels[$row['attribute_id']])) {
+                $product_attributes[$attribute_labels[$row['attribute_id']]][] = trim(Helpers::unescape($row['text']));
+            }
         }
+        $product_attributes = array_map(function ($values) {
+            return implode('; ', $values);
+        }, $product_attributes);
 
         // Add product row.
         return (new ExportRow())
@@ -578,7 +620,8 @@ class Basic implements Field {
             ->addField(1250, self::FIELD_SORT_ORDER, $product['sort_order'] == '0' ? '' : $product['sort_order'])
             ->addField(1260, self::FIELD_MANUFACTURER, $manufacturer)
             ->addField(1270, self::FIELD_CATEGORIES, $categories)
-            ->addField(1280, self::FIELD_FILTERS, $filters);
+            ->addField(1280, self::FIELD_FILTERS, $filters)
+            ->addFields(1290, $product_attributes);
     }
 
 }

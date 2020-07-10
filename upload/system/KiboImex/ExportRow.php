@@ -52,6 +52,14 @@ class ExportRow implements IteratorAggregate, ArrayAccess {
         return $this->setField($order, $label, $value);
     }
 
+    public function addFields(int $order, array $fields): self {
+        $row = $this;
+        foreach ($fields as $label => $value) {
+            $row = $row->addField($order, $label, $value);
+        }
+        return $row;
+    }
+
     public function setField(int $order, string $label, $value): self {
         $newRow = clone $this;
         $newRow->orders[$label] = $order;
