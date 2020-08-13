@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+mkdir -p dist
+
+name="kiboimex-$(git describe --tags --match 'v*')"
+
+git archive -o dist/$name.zip HEAD -- upload
