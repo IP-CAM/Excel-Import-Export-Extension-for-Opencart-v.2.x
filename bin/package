@@ -8,3 +8,5 @@ mkdir -p dist
 name="kiboimex-$(git describe --tags --match 'v*')"
 
 git archive -o dist/$name.zip HEAD -- upload
+
+echo "$PWD/dist/$name.zip"

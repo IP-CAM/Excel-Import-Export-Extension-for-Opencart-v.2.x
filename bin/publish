@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+version="$(git describe --tags --match 'v*' --exact-match)"
+package="$(./bin/package)"
+
+git push origin master --tags
+
+hub release create -a "$package" -m "OpenCart Excel Import/Export (Kiboimex) ${version}" -o "${version}"
