@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 version="$(git describe --tags --match 'v*' --exact-match)"
 package="$(./bin/package)"
 
-git push origin master --tags
+git push git@github.com:apeschar/opencart-excel-import-export master --tags
 
 hub release create -a "$package" -m "OpenCart Excel Import/Export (Kiboimex) ${version}" -o "${version}"
