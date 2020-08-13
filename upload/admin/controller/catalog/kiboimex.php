@@ -4,13 +4,14 @@ use KiboImex\ExportRowCollection;
 use KiboImex\Field;
 use KiboImex\FieldLoader;
 use KiboImex\Helpers;
+use PhpOffice\PhpSpreadsheet;
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once DIR_SYSTEM . 'KiboImex/autoload.php';
-require_once DIR_SYSTEM . 'library/phpexcel/Classes/PHPExcel.php';
+require_once DIR_SYSTEM . 'library/phpspreadsheet/vendor/autoload.php';
 require_once DIR_SYSTEM . 'helper/kiboimex.php';
 
 if (file_exists(DIR_SYSTEM . 'library/unic/unic.php')) {
@@ -119,7 +120,7 @@ class ControllerCatalogKiboimex extends Controller {
 
         // Read Excel file.
         try {
-            $excel = PHPExcel_IOFactory::load($upload['tmp_name']);
+            $excel = PhpSpreadsheet\IOFactory::load($upload['tmp_name']);
             $rows = ExportRowCollection::fromSheet($excel->getActiveSheet());
         } catch(Exception $e) {
             return $this->addError($e->getMessage());
@@ -226,18 +227,18 @@ class ControllerCatalogKiboimex extends Controller {
         }
 
         // Generate Excel sheet.
-        $excel = new PHPExcel;
+        $excel = new PhpSpreadsheet\Spreadsheet();
         $sheet = $excel->setActiveSheetIndex(0);
         $exportRows->writeSheet($sheet);
         $fp = fopen('php://memory', 'w+');
-        $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
+        $writer = new PhpSpreadsheet\Writer\Xlsx($excel);
         $writer->save($fp);
 
         if(headers_sent() || ob_get_length())
             exit;
 
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="export-' . date('Y-m-d\\TH:i:s') . '.xls"');
+        header('Content-Disposition: attachment; filename="export-' . date('Y-m-d\\TH:i:s') . '.xlsx"');
 
         fseek($fp, 0);
         stream_copy_to_stream($fp, fopen('php://output', 'w'));

@@ -5,6 +5,7 @@ namespace KiboImex;
 use Generator;
 use IteratorAggregate;
 use PHPExcel_Worksheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ExportRowCollection implements IteratorAggregate {
 
@@ -17,8 +18,8 @@ class ExportRowCollection implements IteratorAggregate {
         return $newCollection;
     }
 
-    public function writeSheet(PHPExcel_Worksheet $sheet) {
-        $i = 0;
+    public function writeSheet(Worksheet $sheet) {
+        $i = 1;
         $columns = [];
         foreach ($this->getHeader() as $label => $value) {
             $columns[$label] = $i++;
@@ -56,7 +57,7 @@ class ExportRowCollection implements IteratorAggregate {
         return $header;
     }
 
-    public static function fromSheet(PHPExcel_Worksheet $sheet): self {
+    public static function fromSheet(Worksheet $sheet): self {
         $rows = $sheet->toArray(null, true, false, true);
         $rows = array_filter($rows, function($row) {
             foreach ($row as $column) {
