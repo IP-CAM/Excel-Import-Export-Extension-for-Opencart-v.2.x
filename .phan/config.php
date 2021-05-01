@@ -1,14 +1,14 @@
 <?php
 
 $vendorDirectories = [
-    'www/system/library',
     '.phan/stubs',
+    'upload/system/library/phpspreadsheet',
 ];
 
 return [
     'target_php_version' => '7.3',
     'directory_list' => [
-        'www/system/KiboImex',
+        'upload',
         ...$vendorDirectories,
     ],
     'exclude_analysis_directory_list' => $vendorDirectories,
