@@ -5,10 +5,10 @@ namespace KiboImex;
 use Controller;
 use RecursiveDirectoryIterator;
 use RuntimeException;
-use SplFileInfo;
 
 class FieldLoader {
 
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public function getFields(Controller $controller): array {
         $fields = [];
         $dir = __DIR__ . '/Fields';

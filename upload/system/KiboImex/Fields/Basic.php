@@ -441,13 +441,13 @@ class Basic implements Field {
         return $result->row ? $result->row['id'] : '';
     }
 
-    private function findFilter($group_name, $filter_name) {
+    private function findFilter($group_name, $filter_name): ?int {
         $group_id = $this->findByTitle(
             'filter_group_description', 'filter_group_id', 'name',
             $group_name);
 
         if(!$group_id)
-            return;
+            return null;
 
         $result = $this->ctl->db->query("
             SELECT f.filter_id
@@ -460,7 +460,7 @@ class Basic implements Field {
         ");
 
         if(!$result->row)
-            return;
+            return null;
 
         return $result->row['filter_id'];
     }
@@ -472,9 +472,9 @@ class Basic implements Field {
         } else {
             $dimensions = sprintf(
                 '%sx%sx%s',
-                Helpers::formatNumber($product['length']),
-                Helpers::formatNumber($product['width']),
-                Helpers::formatNumber($product['height'])
+                Helpers::formatNumber($product['length'] ?? ''),
+                Helpers::formatNumber($product['width'] ?? ''),
+                Helpers::formatNumber($product['height'] ?? '')
             );
         }
 

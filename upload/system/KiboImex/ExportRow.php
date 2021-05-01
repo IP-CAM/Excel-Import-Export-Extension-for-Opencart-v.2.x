@@ -37,6 +37,7 @@ class ExportRow implements IteratorAggregate, ArrayAccess {
         throw new LogicException("Not implemented");
     }
 
+    /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public function merge(ExportRow $other): ExportRow {
         $newRow = $this;
         foreach ($other->values as $label => $value) {

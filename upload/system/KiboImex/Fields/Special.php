@@ -35,7 +35,7 @@ class Special extends Base {
 
     private function getConditions(int $productId): string {
         return "
-            product_id = " . (int) $productId . "
+            product_id = {$productId}
             AND customer_group_id = 1
             AND date_start = '0000-00-00'
             AND date_end = '0000-00-00'
