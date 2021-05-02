@@ -7,6 +7,17 @@ use RecursiveDirectoryIterator;
 use RuntimeException;
 
 class FieldLoader {
+    private $disableFields;
+
+    public function __construct() {
+        $configFile = DIR_SYSTEM . 'config/kiboimex.php';
+        if (file_exists($configFile)) {
+            $config = require $configFile;
+        } else {
+            $config = [];
+        }
+        $this->disableFields = $config['disableFields'] ?? [];
+    }
 
     /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public function getFields(Controller $controller): array {
@@ -20,6 +31,9 @@ class FieldLoader {
             }
             $relativePath = substr($name, strlen(__DIR__));
             $class = __NAMESPACE__ . str_replace('/', '\\', substr($relativePath, 0, strlen($relativePath) - 4));
+            if ($this->isDisabled($class)) {
+                continue;
+            }
             /** @var Field $field */
             try {
                 $field = new $class($controller);
@@ -34,4 +48,12 @@ class FieldLoader {
         return $fields;
     }
 
+    private function isDisabled(string $class): bool {
+        foreach ($this->disableFields as $disabledClass) {
+            if (is_a($class, $disabledClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
