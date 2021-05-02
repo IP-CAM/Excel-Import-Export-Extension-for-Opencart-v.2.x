@@ -254,8 +254,14 @@ class Basic implements Field {
 
         if (isset($row[self::FIELD_FILTERS])) {
             $filterIds = $this->findFilters(Helpers::splitValues($row[self::FIELD_FILTERS]));
+            $this->ctl->db->query("
+                DELETE pf
+                FROM `" . DB_PREFIX . "product_filter` pf
+                WHERE
+                    pf.product_id = " . (int) $productId . "
+            ");
             foreach ($filterIds as $filterId) {
-                Helpers::insert($this->ctl->db, 'product_to_filter', [
+                Helpers::insert($this->ctl->db, 'product_filter', [
                     'product_id' => $productId,
                     'filter_id' => $filterId,
                 ]);
