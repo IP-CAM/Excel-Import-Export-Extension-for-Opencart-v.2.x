@@ -13,7 +13,11 @@
                 if ($this->user->hasPermission('access', 'catalog/kiboimex')) {
                     $catalog[] = array(
                         'name'     => 'Import/Export',
-                        'href'     => $this->url->link('catalog/kiboimex', 'user_token=' . $this->session->data['user_token'], true),
+                        'href'     => $this->url->link(
+                            'catalog/kiboimex',
+                            http_build_query(array_intersect_key($this->session->data, array_flip(['token', 'user_token']))),
+                            true
+                        ),
                         'children' => array(),
                     );
                 }
