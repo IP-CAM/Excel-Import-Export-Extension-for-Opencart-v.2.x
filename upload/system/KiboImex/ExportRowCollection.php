@@ -69,6 +69,11 @@ class ExportRowCollection implements IteratorAggregate {
             }
             return false;
         });
+        $rows = array_map(function (array $row): array {
+            return array_map(function ($column): string {
+                return trim((string) $column);
+            }, $row);
+        }, $rows);
         if ($rows) {
             $headerRow = array_keys($rows)[0];
             $header = $rows[$headerRow];
@@ -80,7 +85,7 @@ class ExportRowCollection implements IteratorAggregate {
         foreach ($rows as $row) {
             $rowObject = new ExportRow();
             foreach ($header as $column => $label) {
-                $rowObject = $rowObject->addField(0, $label, isset($row[$column]) ? trim($row[$column]) : '');
+                $rowObject = $rowObject->addField(0, $label, $row[$column] ?? '');
             }
             $collection = $collection->addRow($rowObject);
         }
