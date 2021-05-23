@@ -61,19 +61,19 @@ class ExportRowCollection implements IteratorAggregate {
     /** @phan-suppress-next-line PhanUnreferencedPublicMethod */
     public static function fromSheet(Worksheet $sheet): self {
         $rows = $sheet->toArray(null, true, false, true);
-        $rows = array_filter($rows, function($row) {
-            foreach ($row as $column) {
-                if (strlen($column) > 0) {
-                    return true;
-                }
-            }
-            return false;
-        });
         $rows = array_map(function (array $row): array {
             return array_map(function ($column): string {
                 return trim((string) $column);
             }, $row);
         }, $rows);
+        $rows = array_filter($rows, function(array $row): bool {
+            foreach ($row as $column) {
+                if ($column !== '') {
+                    return true;
+                }
+            }
+            return false;
+        });
         if ($rows) {
             $headerRow = array_keys($rows)[0];
             $header = $rows[$headerRow];
@@ -85,6 +85,9 @@ class ExportRowCollection implements IteratorAggregate {
         foreach ($rows as $row) {
             $rowObject = new ExportRow();
             foreach ($header as $column => $label) {
+                if ($label === '') {
+                    continue;
+                }
                 $rowObject = $rowObject->addField(0, $label, $row[$column] ?? '');
             }
             $collection = $collection->addRow($rowObject);
